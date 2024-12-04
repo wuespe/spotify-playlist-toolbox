@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "spotify-playlist-toolbox"
+version = "0.1.0"
+description = "Package containing tools making it easy to group songs into playlists based on audio features"
+authors = ["WSP"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+python-dotenv = "^1.0.0"
+requests = "^2.32.3"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
