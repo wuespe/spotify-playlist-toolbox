@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import requests
 import os
 import random
+import argparse
 
 class Authorize:
     def __init__(self, localhost_port: int = 3000):
@@ -14,7 +15,7 @@ class Authorize:
         self.client_secret = os.getenv("CLIENT_SECRET")
         self.localhost_port = localhost_port
         if not self.client_id or not self.client_secret:
-            raise ValueError("Please set CLIENT_ID and CLIENT_SECRET in .env file")
+            raise ValueError("Please set CLIENT_ID and CLIENT_SECRET environment variables")
 
     def authorize(self, scope: str) -> dict:
         endpoint = "https://accounts.spotify.com/authorize?"
@@ -66,3 +67,44 @@ class Authorize:
         server = HTTPServer(('localhost', port), RequestHandler)
         server.serve_forever()
         self.auth_redirect_params = server.query_params
+
+
+def main():
+    # Create the parser
+    parser = argparse.ArgumentParser(description="Authorize Spotify API client.")
+    
+    # Add arguments
+    parser.add_argument("--scope", type=str, default="playlist-read-private", help="The scope of the authorization.")
+    parser.add_argument("--port", type=int, default=3000, help="The localhost port to listen on.")
+    
+    # Parse the arguments
+    args = parser.parse_args()
+    
+    # Create the Authorize client and authorize
+    auth_client = Authorize(localhost_port=args.port)
+
+    auth_code = auth_client.authorize(scope=args.scope)
+    print("Authorization done.")
+
+    # append the authorization code to the .env file
+    with open(".env", "r") as f:
+        lines = f.readlines()
+    
+    with open(".env", "w") as f:
+        auth_code_written = False
+        for line in lines:
+            if line.startswith("AUTH_CODE"):
+                print("Replacing AUTH_CODE in .env file")
+                f.write(f"AUTH_CODE={auth_code}\n")
+                auth_code_written = True
+            # skip writing empty lines
+            elif line.strip() == "":
+                continue
+            else:
+                f.write(line)
+        if not auth_code_written:
+            print("Appending AUTH_CODE to .env file")
+            f.write(f"AUTH_CODE={auth_code}")
+
+if __name__ == "__main__":
+    main()
